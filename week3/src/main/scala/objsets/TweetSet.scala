@@ -86,6 +86,7 @@ abstract class TweetSet {
     }
   }
 
+  def size(): Int;
 
   /**
    * The following methods are already implemented
@@ -117,7 +118,7 @@ abstract class TweetSet {
 
 class Empty extends TweetSet {
 
-  def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet = new Empty
+  def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet = this
 
 
   /**
@@ -126,13 +127,15 @@ class Empty extends TweetSet {
 
   def contains(tweet: Tweet): Boolean = false
 
-  def incl(tweet: Tweet): TweetSet = new NonEmpty(tweet, new Empty, new Empty)
+  def incl(tweet: Tweet): TweetSet = new NonEmpty(tweet, this, this)
 
   def remove(tweet: Tweet): TweetSet = this
 
   def foreach(f: Tweet => Unit): Unit = ()
 
   def union(that: TweetSet): TweetSet = that
+
+  override def size() = 0
 
   override def toString = "."
 
@@ -142,15 +145,20 @@ class Empty extends TweetSet {
 class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
 
   def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet = {
-    val ret = (left filterAcc(p, acc)) union (right filterAcc(p, acc))
-    if (p(elem)) {
-      ret incl elem
+    val retL = left.filterAcc(p, acc)
+    val retR = right.filterAcc(p, acc)
+    if(p(elem)) {
+      retL union retR incl elem
     } else {
-      ret
+      retL union retR
     }
   }
 
   def union(that: TweetSet): TweetSet = (left union (right union that) incl elem)
+
+  /**
+   * The following methods are already implemented
+   */
 
   /**
    * The following methods are already implemented
@@ -178,7 +186,7 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
     right.foreach(f)
   }
 
-  override def toString = "{" + left.toString + right.toString + "}"
+  override def toString = "{" + left.toString + " " + elem + " " + right.toString + "}"
 
   def mostRetweeted: Tweet = {
     val leftMostTweeted = try {
@@ -199,6 +207,8 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
       def compare(x: Int, y: Int): Int = x - y
     }).get
   }
+
+  def size(): Int = left.size() + right.size() + 1
 }
 
 trait TweetList {

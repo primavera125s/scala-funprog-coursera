@@ -44,6 +44,12 @@ class TweetSetSuite extends FunSuite {
     }
   }
 
+  test("filter: greater than 4 rts") {
+    new TestSets {
+      assert(size(set5.incl(new Tweet("e", "e body", 40)).filter(_.retweets > 4)) === 5)
+    }
+  }
+
   test("union: set4c and set4d") {
     new TestSets {
       assert(size(set4c.union(set4d)) === 4)
